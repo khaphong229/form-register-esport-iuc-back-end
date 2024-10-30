@@ -1,24 +1,36 @@
 const Team = require('../models/team')
 const multer = require('multer')
 const path = require('path')
+const fs = require('fs')
+
+// Tạo đường dẫn tuyệt đối đến thư mục uploads
+const uploadDir = path.join(__dirname, '../../../public/uploads')
+
+// Đảm bảo thư mục uploads tồn tại
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true })
+}
 
 // Cấu hình multer
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, './public/uploads/')
+    cb(null, uploadDir)
   },
   filename: function (req, file, cb) {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9)
-    cb(null, uniqueSuffix + path.extname(file.originalname))
+    // Lưu bằng tên gốc của ảnh, thay khoảng trắng và ký tự đặc biệt
+    const safeName = file.originalname.replace(/\s+/g, '-').replace(/[^a-zA-Z0-9.-]/g, '')
+    cb(null, safeName)
   }
 })
 
-// Filter chỉ nhận file ảnh
+// Cải thiện file filter
 const fileFilter = (req, file, cb) => {
-  if (file.mimetype.startsWith('image/')) {
+  const allowedTypes = ['image/jpeg', 'image/png', 'image/gif']
+
+  if (allowedTypes.includes(file.mimetype)) {
     cb(null, true)
   } else {
-    cb(new Error('Chỉ được upload file ảnh!'), false)
+    cb(new Error('Chỉ chấp nhận file JPG, PNG hoặc GIF!'), false)
   }
 }
 
@@ -26,7 +38,7 @@ const upload = multer({
   storage: storage,
   fileFilter: fileFilter,
   limits: {
-    fileSize: 5 * 1024 * 1024 // Giới hạn 5MB
+    fileSize: 5 * 1024 * 1024 // 5MB
   }
 }).array('images', 10)
 
@@ -35,6 +47,12 @@ class RegisterController {
   uploadImages(req, res) {
     upload(req, res, function (err) {
       if (err instanceof multer.MulterError) {
+        if (err.code === 'LIMIT_FILE_SIZE') {
+          return res.status(400).json({
+            success: false,
+            message: 'File quá lớn. Giới hạn là 5MB'
+          })
+        }
         return res.status(400).json({
           success: false,
           message: 'Lỗi upload: ' + err.message
@@ -53,7 +71,10 @@ class RegisterController {
         })
       }
 
-      const imagePaths = req.files.map((file) => `/uploads/${file.filename}`)
+      // Tạo đường dẫn tương đối cho frontend
+      const imagePaths = req.files.map((file) => {
+        return `/uploads/${path.basename(file.path)}`
+      })
 
       res.json({
         success: true,
@@ -75,6 +96,15 @@ class RegisterController {
         })
       }
 
+      // Check if team name already exists
+      const existingTeam = await Team.findOne({ name: formData.name })
+      if (existingTeam) {
+        return res.status(400).json({
+          success: false,
+          message: 'Tên nhóm đã tồn tại, vui lòng chọn tên khác'
+        })
+      }
+
       // Format lại dữ liệu members
       const formattedMembers = formData.members.map((member, index) => {
         const num = index + 1
@@ -92,6 +122,7 @@ class RegisterController {
       const teamData = {
         name: formData.name,
         group: formData.group,
+        slogan: formData.slogan,
         leader: {
           codeLeader: formData.leader.codeLeader,
           emailLeader: formData.leader.emailLeader,

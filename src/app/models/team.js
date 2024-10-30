@@ -22,6 +22,7 @@ const MemberSchema = new Schema({
 const TeamSchema = new Schema(
   {
     name: { type: String, required: true },
+    slogan: { type: String },
     group: { type: String, required: true },
     leader: LeaderSchema,
     members: [MemberSchema],
