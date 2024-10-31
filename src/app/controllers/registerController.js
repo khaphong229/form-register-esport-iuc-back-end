@@ -3,27 +3,22 @@ const multer = require('multer')
 const path = require('path')
 const fs = require('fs')
 
-// Tạo đường dẫn tuyệt đối đến thư mục uploads
 const uploadDir = path.join(__dirname, '../../../public/uploads')
 
-// Đảm bảo thư mục uploads tồn tại
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true })
 }
 
-// Cấu hình multer
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, uploadDir)
   },
   filename: function (req, file, cb) {
-    // Lưu bằng tên gốc của ảnh, thay khoảng trắng và ký tự đặc biệt
     const safeName = file.originalname.replace(/\s+/g, '-').replace(/[^a-zA-Z0-9.-]/g, '')
     cb(null, safeName)
   }
 })
 
-// Cải thiện file filter
 const fileFilter = (req, file, cb) => {
   const allowedTypes = ['image/jpeg', 'image/png', 'image/gif']
 
@@ -89,14 +84,13 @@ class RegisterController {
     try {
       const formData = req.body
 
-      if (!formData.name || !formData.group || !formData.leader || !formData.members) {
+      if (!formData.name || !formData.leader || !formData.members) {
         return res.status(400).json({
           success: false,
           message: 'Thiếu thông tin bắt buộc'
         })
       }
 
-      // Check if team name already exists
       const existingTeam = await Team.findOne({ name: formData.name })
       if (existingTeam) {
         return res.status(400).json({
@@ -105,7 +99,6 @@ class RegisterController {
         })
       }
 
-      // Format lại dữ liệu members
       const formattedMembers = formData.members.map((member, index) => {
         const num = index + 1
         return {
@@ -118,10 +111,8 @@ class RegisterController {
         }
       })
 
-      // Tạo object mới với dữ liệu đã format
       const teamData = {
         name: formData.name,
-        group: formData.group,
         slogan: formData.slogan,
         leader: {
           codeLeader: formData.leader.codeLeader,
