@@ -7,7 +7,7 @@
     "clean": "rm -rf build && mkdir build",
     "dev": "cross-env BUILD_MODE=dev npx nodemon",
     "production": "cross-env BUILD_MODE=production npx nodemon",
-    "build": "npm run clean && npm run build-babel",
+    "build": "npm run clean",
     "start": "node dist/index.js",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
