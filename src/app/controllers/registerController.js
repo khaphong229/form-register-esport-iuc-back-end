@@ -1,21 +1,14 @@
 const Team = require('../models/team')
 const multer = require('multer')
-const path = require('path')
-const fs = require('fs')
+const cloudinary = require('../../services/cloudinaryConfig')
+const { CloudinaryStorage } = require('multer-storage-cloudinary')
 
-const uploadDir = path.join(__dirname, '../../../public/uploads')
-
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true })
-}
-
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, uploadDir)
-  },
-  filename: function (req, file, cb) {
-    const safeName = file.originalname.replace(/\s+/g, '-').replace(/[^a-zA-Z0-9.-]/g, '')
-    cb(null, safeName)
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'team-uploads',
+    allowed_formats: ['jpg', 'jpeg', 'png', 'gif'],
+    transformation: [{ width: 500, height: 500, crop: 'limit' }]
   }
 })
 
@@ -33,7 +26,7 @@ const upload = multer({
   storage: storage,
   fileFilter: fileFilter,
   limits: {
-    fileSize: 5 * 1024 * 1024 // 5MB
+    fileSize: 5 * 1024 * 1024
   }
 }).array('images', 10)
 
@@ -66,10 +59,8 @@ class RegisterController {
         })
       }
 
-      // Tạo đường dẫn tương đối cho frontend
-      const imagePaths = req.files.map((file) => {
-        return `/uploads/${path.basename(file.path)}`
-      })
+      // Extract Cloudinary URLs from uploaded files
+      const imagePaths = req.files.map((file) => file.path)
 
       res.json({
         success: true,
@@ -79,6 +70,7 @@ class RegisterController {
     })
   }
 
+  // Rest of the existing methods remain the same
   // [POST] /register
   async createTeam(req, res) {
     try {
