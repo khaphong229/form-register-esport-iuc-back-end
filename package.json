@@ -5,8 +5,8 @@
   "scripts": {
     "clean": "rm -rf build && mkdir build",
     "dev": "cross-env BUILD_MODE=dev nodemon",
-    "build": "npm install && npm run clean",
-    "start": "cross-env BUILD_MODE=production node index.js",
+    "build": "npm install --legacy-peer-deps && npm run clean",
+    "production": "cross-env BUILD_MODE=production nodemon",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "prettier": "prettier --check .",
@@ -24,7 +24,7 @@
   "homepage": "https://github.com/khaphong229/form-register-esport-iuc-back-end#readme",
   "description": "",
   "dependencies": {
-    "cloudinary": "^2.5.1",
+    "cloudinary": "^1.41.3",
     "cors": "^2.8.5",
     "cross-env": "^7.0.3",
     "dotenv": "^16.4.5",
