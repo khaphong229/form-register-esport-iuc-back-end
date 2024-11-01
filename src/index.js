@@ -8,10 +8,10 @@ const app = express()
 const port = 3456
 
 const corsOptions = {
-  origin: '*',
+  origin: process.env.CLIENT_URL || '*',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: false
+  credentials: true
 }
 
 app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')))
