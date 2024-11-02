@@ -4,14 +4,17 @@ const path = require('path')
 const cors = require('cors')
 require('dotenv').config()
 
+const url_client = require('./utils/constants')
+
 const app = express()
 const port = 3456
 
 const corsOptions = {
-  origin: process.env.CLIENT_URL || '*',
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true
+  origin: url_client,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type'],
+  credentials: true,
+  maxAge: 86400
 }
 
 app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')))

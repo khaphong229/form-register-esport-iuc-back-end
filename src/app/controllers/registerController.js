@@ -8,7 +8,8 @@ const storage = new CloudinaryStorage({
   params: {
     folder: 'team-uploads',
     allowed_formats: ['jpg', 'jpeg', 'png', 'gif'],
-    transformation: [{ width: 500, height: 500, crop: 'limit' }]
+    transformation: [{ width: 500, height: 500, crop: 'limit' }],
+    public_id: (req, file) => file.originalname
   }
 })
 
@@ -59,7 +60,6 @@ class RegisterController {
         })
       }
 
-      // Extract Cloudinary URLs from uploaded files
       const imagePaths = req.files.map((file) => file.path)
 
       res.json({
