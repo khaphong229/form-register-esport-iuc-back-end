@@ -1,9 +1,19 @@
 const Tournament = require('../models/competition_teams')
-
+const Rank = require('../models/rank_teams')
 class TournamentController {
   async getAllTournaments(req, res) {
     try {
       const tournaments = await Tournament.find()
+      res.status(200).json(tournaments)
+    } catch (error) {
+      res.status(500).json({
+        message: error.message
+      })
+    }
+  }
+  async getRankTeam(req, res) {
+    try {
+      const tournaments = await Rank.find()
       res.status(200).json(tournaments)
     } catch (error) {
       res.status(500).json({
