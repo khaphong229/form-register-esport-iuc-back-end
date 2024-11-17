@@ -64,6 +64,49 @@ class TournamentController {
       })
     }
   }
+  async updateTeamScoreRank(req, res) {
+    try {
+      const { tournamentId, tableIndex, teamIndex, newScore } = req.body
+      const tournament = await Rank.findById(tournamentId)
+      if (!tournament) {
+        return res.status(404).json({
+          success: false,
+          message: 'Tournament not found'
+        })
+      }
+
+      // Kiểm tra xem data[tableIndex] có tồn tại không
+      if (!tournament.data || !tournament.data[tableIndex]) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid table index'
+        })
+      }
+
+      // Kiểm tra xem teams[teamIndex] có tồn tại không
+      if (!tournament.data[tableIndex].teams || !tournament.data[tableIndex].teams[teamIndex]) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid team index'
+        })
+      }
+
+      // Cập nhật điểm
+      tournament.data[tableIndex].teams[teamIndex].score = newScore
+      await tournament.save()
+
+      res.status(200).json({
+        success: true,
+        data: tournament
+      })
+    } catch (error) {
+      console.error('Error in updateTeamScore:', error)
+      res.status(400).json({
+        success: false,
+        message: error.message
+      })
+    }
+  }
 }
 
 module.exports = new TournamentController()
